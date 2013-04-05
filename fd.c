@@ -65,6 +65,9 @@ struct luaL_Reg fd_lib[] = {
 
 
 int luaopen_fd(lua_State *L) {
+	luaopen_io(L); /* initialise io metatable */
+	lua_pop(L, 1);
+
 	luaL_newlib(L, fd_lib);
 
 	return 1;
