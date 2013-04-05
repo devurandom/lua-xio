@@ -10,8 +10,23 @@
 #include "lextlib/lextlib_lua52.h"
 
 
+int luaopen_io (lua_State *L);
+
 typedef luaL_Stream LStream;
 
+
+#define tolstream(L)	((LStream *)luaL_checkudata(L, 1, LUA_FILEHANDLE))
+
+/*
+** function to (not) close the standard files stdin, stdout, and stderr
+*/
+static int io_noclose (lua_State *L) {
+  LStream *p = tolstream(L);
+  p->closef = &io_noclose;  /* keep file opened */
+  lua_pushnil(L);
+  lua_pushliteral(L, "cannot close standard file");
+  return 2;
+}
 
 /*
 ** When creating file handles, always creates a `closed' file handle
@@ -28,7 +43,7 @@ static LStream *newprefile (lua_State *L) {
 static LStream *newfile (lua_State *L) {
   LStream *p = newprefile(L);
   p->f = NULL;
-  p->closef = NULL;
+  p->closef = &io_noclose;
   return p;
 }
 
