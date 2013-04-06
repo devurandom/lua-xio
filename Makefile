@@ -7,11 +7,11 @@ C99FLAGS_RELAXED=-std=c99 -fPIC -I/usr/include/lua$(LUA_VERSION) -D_XOPEN_SOURCE
 LDFLAGS=-Wl,--no-undefined
 LIBS=-llua$(LUA_VERSION)
 
-all: fd.so
+all: xio.so
 
-fd.o: fd.c lextlib/lextlib_lua52.h
+xio.o: xio.c lextlib/lextlib_lua52.h
 
-fd.so: fd.o lextlib.o
+xio.so: xio.o lextlib.o
 
 lextlib.o: lextlib/lextlib.c
 	$(CC) $(C99FLAGS_RELAXED) -o $@ -c $<

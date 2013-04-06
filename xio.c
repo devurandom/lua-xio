@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -47,7 +49,7 @@ static LStream *newfile (lua_State *L) {
   return p;
 }
 
-static int fd_open(lua_State *L) {
+static int xio_fdopen(lua_State *L) {
 	int fd = luaX_checkinteger(L, 1, "fd");
 	const char *mode = luaX_checkstring(L, 2, "mode");
 
@@ -71,19 +73,40 @@ static int fd_open(lua_State *L) {
 	return 1;
 }
 
+static int xio_mkfifo(lua_State *L) {
+	const char *filename = luaX_checkstring(L, 1, "filename");
+	const char *modestr = luaX_checkstring(L, 2, "mode");
 
-struct luaL_Reg fd_lib[] = {
-	{ "open", fd_open },
+	int err = 0;
+	mode_t mode = 0;
+	if (strchr(modestr, 'r') != NULL) {
+		mode |= S_IRUSR;
+	}
+	if (strchr(modestr, 'w') != NULL) {
+		mode |= S_IWUSR;
+	}
+	if (strchr(modestr, 'x') != NULL) {
+		mode |= S_IXUSR;
+	}
+
+	err = mkfifo(filename, mode);
+	return luaL_fileresult(L, err == 0, filename);
+}
+
+
+struct luaL_Reg xio_lib[] = {
+	{ "fdopen", xio_fdopen },
+	{ "mkfifo", xio_mkfifo },
 
 	{ NULL, NULL }
 };
 
 
-int luaopen_fd(lua_State *L) {
-	luaopen_io(L); /* initialise io metatable */
+int luaopen_xio(lua_State *L) {
+	luaL_requiref(L, "io", luaopen_io, 0); /* initialise io metatable */ /* [-0,+1,e] */
 	lua_pop(L, 1);
 
-	luaL_newlib(L, fd_lib);
+	luaL_newlib(L, xio_lib);
 
 	return 1;
 }
