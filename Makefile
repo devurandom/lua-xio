@@ -2,22 +2,29 @@ ifeq ($(LUA_VERSION),)
 LUA_VERSION=5.2
 endif
 
-CFLAGS=-Wall -Werror -std=c89 -pedantic -g -fPIC -I/usr/include/lua$(LUA_VERSION) -D_XOPEN_SOURCE=700
-C99FLAGS_RELAXED=-std=c99 -fPIC -I/usr/include/lua$(LUA_VERSION) -D_XOPEN_SOURCE=700
+ifneq ($(DEBUG),)
+EXTRA_CFLAGS+= -g -O0
+endif
+
+LUA_CPPFLAGS=-I/usr/include/lua$(LUA_VERSION)
+
+CFLAGS=-Wall -Werror -pedantic -std=c89 -fPIC -D_XOPEN_SOURCE=700 $(EXTRA_CFLAGS) $(LUA_CPPFLAGS)
 LDFLAGS=-Wl,--no-undefined
 LIBS=-llua$(LUA_VERSION)
 
+.PHONY: all
 all: xio.so
 
-xio.o: xio.c lextlib/lextlib_lua52.h
+xio.so: xio.o lextlib/lextlib.o
 
-xio.so: xio.o lextlib.o
+xio.o: xio.c lextlib/lextlib.h lextlib/lextlib_global.h lextlib/lextlib_lua52.h
 
-lextlib.o: lextlib/lextlib.c
-	$(CC) $(C99FLAGS_RELAXED) -o $@ -c $<
+lextlib/lextlib.o:
+	$(MAKE) -C lextlib
 
+.PHONY: clean
 clean:
-	$(RM) *.so *.o
+	$(RM) *.o *.so
 
 .SUFFIXES: .c .o .so
 
