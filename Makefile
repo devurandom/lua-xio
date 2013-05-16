@@ -2,15 +2,16 @@ ifeq ($(LUA_VERSION),)
 LUA_VERSION=5.2
 endif
 
+LUA_CPPFLAGS=-I/usr/include/lua$(LUA_VERSION)
+LUA_LIBS=-llua$(LUA_VERSION)
+
 ifneq ($(DEBUG),)
 EXTRA_CFLAGS+= -g -O0
 endif
 
-LUA_CPPFLAGS=-I/usr/include/lua$(LUA_VERSION)
-
 CFLAGS=-Wall -Werror -pedantic -std=c89 -fPIC -D_XOPEN_SOURCE=700 $(EXTRA_CFLAGS) $(LUA_CPPFLAGS)
 LDFLAGS=-Wl,--no-undefined
-LIBS=-llua$(LUA_VERSION)
+LIBS=$(LUA_LIBS)
 
 .PHONY: all
 all: xio.so
