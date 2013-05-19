@@ -7,9 +7,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-
-#include "lextlib/lextlib.h"
-#include "lextlib/lextlib_lua52.h"
+#include <lextlib.h>
+#include <lextlib_lua52.h>
 
 
 int luaopen_io (lua_State *L);
